@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday!</title>
+  <style>
+    :root {
+      --brand: #F05A28;
+      --brand-light: #f7784d;
+      --brand-dark: #c8431a;
+      --sponge: #f7c59f;
+      --sponge-dark: #e2a173;
+      --icing: #fff8f4;
+      --gold: #ffd166;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 40px 16px;
+      font-family: "Trebuchet MS", system-ui, sans-serif;
+      color: #fff;
+      text-align: center;
+      background: radial-gradient(circle at 50% 35%, var(--brand-light), var(--brand) 55%, var(--brand-dark));
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 7vw, 3.5rem);
+      text-shadow: 0 4px 0 rgba(0, 0, 0, .18);
+      animation: bob 3s ease-in-out infinite;
+    }
+    @keyframes bob { 50% { transform: translateY(-6px); } }
+
+    /* ---------- Cake ---------- */
+    .cake { display: flex; flex-direction: column; align-items: center; }
+
+    .candles {
+      position: relative;
+      z-index: 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 18px;
+      height: 84px;
+      margin-bottom: -8px; /* sinks candles into the icing */
+    }
+    .candle {
+      position: relative;
+      width: 12px;
+      height: 46px;
+      border-radius: 3px 3px 0 0;
+      background: repeating-linear-gradient(45deg, #fff 0 6px, var(--gold) 6px 12px);
+    }
+    .candle::before { /* wick */
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: -7px;
+      width: 2px;
+      height: 8px;
+      background: #333;
+    }
+    .flame {
+      position: absolute;
+      left: -1px;
+      bottom: calc(100% + 4px);
+      width: 14px;
+      height: 24px;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      background: radial-gradient(ellipse at 50% 75%, #fff 0 15%, #ffe066 35%, #ff9f1c 70%, transparent 72%);
+      box-shadow: 0 0 18px 6px rgba(255, 220, 120, .55);
+      transform-origin: 50% 90%;
+      animation: flicker .2s ease-in-out infinite alternate;
+      transition: opacity .3s, transform .3s;
+    }
+    @keyframes flicker {
+      from { transform: scale(1) rotate(-2deg); }
+      to   { transform: scale(.92, 1.08) rotate(2deg); }
+    }
+    .candle.out .flame { animation: none; opacity: 0; transform: scale(.2); }
+
+    .candle::after { /* smoke puff */
+      content: "";
+      position: absolute;
+      left: 0;
+      top: -18px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(240, 240, 240, .8);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .candle.out::after { animation: smoke 1.2s ease-out forwards; }
+    @keyframes smoke {
+      from { opacity: .8; transform: translateY(0) scale(.6); }
+      to   { opacity: 0;  transform: translateY(-40px) scale(2.2); }
+    }
+
+    .tier {
+      position: relative;
+      overflow: hidden;
+      border-radius: 10px 10px 6px 6px;
+      background:
+        linear-gradient(transparent 58%, var(--brand) 58% 66%, transparent 66%), /* jam */
+        linear-gradient(90deg, var(--sponge-dark), var(--sponge) 30% 70%, var(--sponge-dark));
+    }
+    .tier.top    { z-index: 1; width: 190px; height: 70px; }
+    .tier.bottom { z-index: 1; width: 260px; height: 90px; }
+    .tier::before { /* icing + sprinkles */
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 20px;
+      background:
+        radial-gradient(circle, var(--brand) 2px, transparent 2.5px) 6px 4px / 30px 14px,
+        radial-gradient(circle, #4cc9f0 2px, transparent 2.5px) 18px 9px / 34px 14px,
+        radial-gradient(circle, var(--gold) 2px, transparent 2.5px) 12px 2px / 26px 14px,
+        var(--icing);
+    }
+    .tier::after { /* icing drips */
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 19px;
+      height: 16px;
+      background: radial-gradient(circle at 50% 0, var(--icing) 9px, transparent 10px) 0 0 / 26px 16px repeat-x;
+    }
+    .plate {
+      width: 310px;
+      height: 18px;
+      margin-top: -6px;
+      border-radius: 50%;
+      background: linear-gradient(#fafafa, #d8d2cf);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, .25);
+    }
+
+    /* ---------- Lyrics ---------- */
+    .hint { min-height: 1.5em; font-size: 1.15rem; font-weight: 600; }
+
+    .lyrics {
+      font-size: clamp(1.05rem, 3.5vw, 1.35rem);
+      font-weight: 600;
+      line-height: 1.9;
+    }
+    .lyrics p { transition: opacity .2s; }
+    .lyrics.playing p { opacity: .55; }
+    .lyrics.playing p.active { opacity: 1; }
+    .syl { border-radius: 4px; transition: background .1s, color .1s; }
+    .syl.on { background: #fff; color: var(--brand); box-shadow: 0 0 0 3px #fff; }
+
+    /* ---------- Confetti ---------- */
+    .confetti {
+      position: fixed;
+      top: -16px;
+      z-index: 10;
+      width: 8px;
+      height: 14px;
+      pointer-events: none;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      to { transform: translate(var(--dx), 110vh) rotate(var(--rot)); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      h1, .flame { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Happy Birthday, <span id="name">Rodney</span>! 🎂</h1>
+
+  <div class="cake" role="img" aria-label="Birthday cake with candles">
+    <div class="candles" id="candles"></div>
+    <div class="tier top"></div>
+    <div class="tier bottom"></div>
+    <div class="plate"></div>
+  </div>
+
+  <p class="hint" id="hint" aria-live="polite"></p>
+
+  <div class="lyrics" id="lyrics"></div>
+
+  <script>
+    // ===== Settings =====
+    const NAME = new URLSearchParams(location.search).get('name') || 'Rodney'; // e.g. index.html?name=Ana
+    const CANDLE_COUNT = 5;
+    const BEAT = 0.42; // seconds per beat (lower = faster)
+
+    // Happy Birthday melody: [note, beats]. Syllables ending in "-" join the next one.
+    const SONG = [
+      { words: ['Hap-', 'py', 'birth-', 'day', 'to', 'you'],
+        notes: [['G4', .75], ['G4', .25], ['A4', 1], ['G4', 1], ['C5', 1], ['B4', 2]] },
+      { words: ['Hap-', 'py', 'birth-', 'day', 'to', 'you'],
+        notes: [['G4', .75], ['G4', .25], ['A4', 1], ['G4', 1], ['D5', 1], ['C5', 2]] },
+      { words: ['Hap-', 'py', 'birth-', 'day', NAME],
+        notes: [['G4', .75], ['G4', .25], ['G5', 1], ['E5', 1], ['C5', 1], ['B4', 1], ['A4', 2]] },
+      { words: ['Hap-', 'py', 'birth-', 'day', 'to', 'you!'],
+        notes: [['F5', .75], ['F5', .25], ['E5', 1], ['C5', 1], ['D5', 1], ['C5', 3]] },
+    ];
+    const MIDI = { G4: 67, A4: 69, B4: 71, C5: 72, D5: 74, E5: 76, F5: 77, G5: 79 };
+    const freq = note => 440 * Math.pow(2, (MIDI[note] - 69) / 12);
+
+    const $ = id => document.getElementById(id);
+    const hint = $('hint');
+    const lyricsEl = $('lyrics');
+
+    $('name').textContent = NAME;
+    document.title = `Happy Birthday, ${NAME}!`;
+
+    // ===== Candles =====
+    const candles = [];
+    for (let i = 0; i < CANDLE_COUNT; i++) {
+      const c = document.createElement('div');
+      c.className = 'candle';
+      c.innerHTML = '<span class="flame"></span>';
+      $('candles').appendChild(c);
+      candles.push(c);
+    }
+
+    // ===== Lyrics =====
+    const lineEls = SONG.map(({ words }) => {
+      const p = document.createElement('p');
+      words.forEach((w, i) => {
+        const s = document.createElement('span');
+        s.className = 'syl';
+        s.textContent = w.replace(/-$/, '');
+        p.append(s);
+        if (!w.endsWith('-') && i < words.length - 1) p.append(' ');
+      });
+      lyricsEl.append(p);
+      return p;
+    });
+
+    function highlight(line, syl) {
+      document.querySelectorAll('.syl.on').forEach(s => s.classList.remove('on'));
+      lineEls.forEach((p, i) => p.classList.toggle('active', i === line));
+      lineEls[line].children[syl].classList.add('on');
+    }
+
+    function clearHighlight() {
+      lyricsEl.classList.remove('playing');
+      document.querySelectorAll('.syl.on').forEach(s => s.classList.remove('on'));
+      lineEls.forEach(p => p.classList.remove('active'));
+    }
+
+    // ===== Sound (Web Audio, no audio files needed) =====
+    let ctx = null;
+
+    function audio() {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      return ctx;
+    }
+
+    function tone(f, t, dur) {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.95);
+      osc.connect(g).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + dur);
+    }
+
+    function playSong() {
+      lyricsEl.classList.add('playing');
+      const start = ctx.currentTime + 0.1;
+      let t = start;
+      SONG.forEach(({ words, notes }, line) => {
+        notes.forEach(([note, beats], n) => {
+          const dur = beats * BEAT;
+          const syl = Math.min(n, words.length - 1);
+          tone(freq(note), t, dur);
+          setTimeout(() => highlight(line, syl), (t - start) * 1000 + 100);
+          t += dur;
+        });
+      });
+      setTimeout(finale, (t - start) * 1000 + 600);
+    }
+
+    // After the song: blow out the candles one by one, then confetti
+    function finale() {
+      clearHighlight();
+      candles.forEach((c, i) => setTimeout(() => {
+        c.classList.add('out');
+        puff();
+      }, i * 250));
+      setTimeout(() => {
+        hint.textContent = `🎉 Make a wish, ${NAME}! 🎉`;
+        confetti();
+      }, candles.length * 250 + 300);
+    }
+
+    // Little "whoosh" for each candle
+    function puff() {
+      const len = Math.floor(ctx.sampleRate * 0.35);
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+      const src = ctx.createBufferSource();
+      const filter = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      src.buffer = buf;
+      filter.type = 'lowpass';
+      filter.frequency.value = 1000;
+      g.gain.value = 0.3;
+      src.connect(filter).connect(g).connect(ctx.destination);
+      src.start();
+    }
+
+    // ===== Confetti =====
+    function confetti() {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const colors = ['#fff', '#ffd166', '#4cc9f0', '#80ed99', '#ff9ec7', '#7a1f05'];
+      for (let i = 0; i < 120; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.background = colors[i % colors.length];
+        p.style.borderRadius = Math.random() < .5 ? '50%' : '2px';
+        p.style.animationDuration = 2.5 + Math.random() * 2 + 's';
+        p.style.animationDelay = Math.random() * .6 + 's';
+        p.style.setProperty('--dx', Math.random() * 200 - 100 + 'px');
+        p.style.setProperty('--rot', Math.random() * 1080 - 540 + 'deg');
+        p.addEventListener('animationend', () => p.remove());
+        document.body.append(p);
+      }
+    }
+
+    // ===== Autoplay =====
+    // Browsers block sound until the visitor interacts with the page, so this
+    // tries to play right away and falls back to the first tap/click/key press anywhere.
+    let started = false;
+    const unlockEvents = ['click', 'touchend', 'keydown'];
+
+    function start() {
+      if (started) return;
+      const ac = audio();
+      ac.resume().then(() => {
+        if (started || ac.state !== 'running') return;
+        started = true;
+        unlockEvents.forEach(e => document.removeEventListener(e, start));
+        hint.textContent = '';
+        playSong();
+      }).catch(() => {});
+    }
+
+    unlockEvents.forEach(e => document.addEventListener(e, start));
+    start();
+    setTimeout(() => {
+      if (!started) hint.textContent = '🔊 Tap anywhere to hear the song';
+    }, 400);
+  </script>
+</body>
+</html>
